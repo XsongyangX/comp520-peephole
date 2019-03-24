@@ -92,9 +92,93 @@ int simplify_goto_goto(CODE **c)
   }
   return 0;
 }
+
+/*
+ * cmp true_1
+ * iconst_0
+ * goto stop_2
+ * true1:
+ * iconst_1
+ * stop_2:
+ * ifeq stop_0
+ * ...
+ * stop_0:
+ * ---------->
+ * !cmp stop_0
+ * ...
+ * stop_0:
+ */
+int simplify_conditional(CODE **c)
+{int l1,l2, l3, l4;
+  if ( is_if_acmpeq(*c, &l1) || is_if_acmpne(*c,&l1) || is_if_icmpeq(*c, &l1) || 
+      is_if_icmpge(*c, &l1) || is_if_icmpgt(*c, &l1) || is_if_icmple(*c, &l1) ||
+      is_if_icmplt(*c, &l1) || is_if_icmpne(*c, &l1) || is_ifeq(*c, &l1) ||
+      is_ifne(*c, &l1) || is_ifnonnull(*c, &l1) || is_ifnull(*c, &l1))
+      {
+        if(is_ldc_int(next(*c), &l2) && l2 == 0 && is_goto(next(next(*c)), &l2) && is_ifeq(next(destination(l2)), &l3))
+        {
+          if(is_ldc_int(next(destination(l1)), &l4) && l4 == 1 && is_label(next(next(destination(l1))), &l4) && l4 == l2)
+          {
+            droplabel(l1);
+            droplabel(l2);
+            if(is_if_acmpeq(*c, &l1))
+            {
+              return replace(c, 7, makeCODEif_acmpne(l3, NULL));
+            }
+            else if(is_if_acmpne(*c,&l1))
+            {
+              return replace(c, 7, makeCODEif_acmpeq(l3, NULL));
+            }
+            else if(is_if_icmpeq(*c, &l1))
+            {
+              return replace(c, 7, makeCODEif_icmpne(l3, NULL));
+            }
+            else if(is_if_icmpge(*c, &l1))
+            {
+              return replace(c, 7, makeCODEif_icmplt(l3, NULL));
+            }
+            else if(is_if_icmpgt(*c, &l1))
+            {
+              return replace(c, 7, makeCODEif_icmple(l3, NULL));
+            }
+            else if(is_if_icmple(*c, &l1))
+            {
+              return replace(c, 7, makeCODEif_icmpgt(l3, NULL));
+            }
+            else if(is_if_icmplt(*c, &l1))
+            {
+              return replace(c, 7, makeCODEif_icmpge(l3, NULL));
+            }
+            else if(is_if_icmpne(*c, &l1))
+            {
+              return replace(c, 7, makeCODEif_icmpeq(l3, NULL));
+            }
+            else if(is_ifeq(*c, &l1))
+            {
+              return replace(c, 7, makeCODEifne(l3, NULL));
+            }
+            else if(is_ifne(*c, &l1))
+            {
+              return replace(c, 7, makeCODEifeq(l3, NULL));
+            }
+            else if(is_ifnonnull(*c, &l1))
+            {
+              return replace(c, 7, makeCODEifnull(l3, NULL));
+            }
+            else{
+              return replace(c, 7, makeCODEifnonnull(l3, NULL));
+            }
+          }
+         
+        }
+        
+      }
+  return 0;
+}
 void init_patterns(void) {
 	ADD_PATTERN(simplify_multiplication_right);
 	ADD_PATTERN(simplify_astore);
 	ADD_PATTERN(positive_increment);
 	ADD_PATTERN(simplify_goto_goto);
+  ADD_PATTERN(simplify_conditional);
 }
