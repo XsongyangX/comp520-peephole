@@ -195,4 +195,5 @@ void init_patterns(void) {
 	ADD_PATTERN(positive_increment);
 	ADD_PATTERN(simplify_goto_goto);
 	ADD_PATTERN(simplify_conditional);
+	ADD_PATTERN(remove_dead_label);
 }
