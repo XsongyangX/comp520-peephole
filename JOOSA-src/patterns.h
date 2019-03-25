@@ -175,10 +175,24 @@ int simplify_conditional(CODE **c)
       }
   return 0;
 }
+
+/* 
+	Label: (dead label)
+	--------->
+	(nothing)
+*/
+int remove_dead_label(CODE **c) {
+	int label;
+	if (is_label(*c, &label) && deadlabel(&label)){
+		return kill_line(c);
+	}
+	return 0;
+}
+ 
 void init_patterns(void) {
 	ADD_PATTERN(simplify_multiplication_right);
 	ADD_PATTERN(simplify_astore);
 	ADD_PATTERN(positive_increment);
 	ADD_PATTERN(simplify_goto_goto);
-  ADD_PATTERN(simplify_conditional);
+	ADD_PATTERN(simplify_conditional);
 }
