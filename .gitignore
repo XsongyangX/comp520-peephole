@@ -3,3 +3,4 @@
 *.class
 *.j
 *.o
+.vscode
