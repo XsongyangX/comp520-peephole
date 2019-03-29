@@ -213,7 +213,7 @@ int collapse_unique_label(CODE **c)
   {
     droplabel(label2);
     copylabel(label1);
-    return replace(c, )
+    //return replace(c, )
   }
   return 0;
 }
