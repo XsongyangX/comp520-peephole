@@ -192,36 +192,36 @@ int remove_dead_label(CODE **c) {
 
 /*
   goto Label1
-  goto Label2 (unique)
   ...
 Label1:
-Label2: (unique)
+Label2:
 ----------------->
-  goto Label1
+  goto Label2
   ...
-Label1: (reference count increments)
+Label1: (reference count decrements, eventually dies)
+Label2: (reference count increments)
 */
-int collapse_unique_label(CODE **c)
+int collapse_labels(CODE **c)
 {
   int label1, label2;
-  if (is_goto(*c, &label1)
-    && is_goto(next(*c), &label2)
-    && label1 > label2
-    && uniquelabel(label2)
-    && is_label(next(destination(label1)), &label2)
-  )
-  {
-    droplabel(label2);
-    copylabel(label1);
-	
-	/* 
-	only remove the goto instruction
-	dead labels are handled by something else
-	*/
-	return replace(c, 2, makeCODEgoto(label1, NULL));
-  }
+  
+  if (
+	is_goto(*c, &label1)
+	&& is_label(next(destination(label1)), &label2)
+	&& label1>label2
+	)
+	{
+		droplabel(label1);
+		copylabel(label2);
+		return replace(c, 1, makeCODEgoto(label2, NULL));
+	}
   return 0;
 }
+
+
+/*
+
+*/
 
 void init_patterns(void) {
 	ADD_PATTERN(simplify_multiplication_right);
@@ -230,5 +230,5 @@ void init_patterns(void) {
 	ADD_PATTERN(simplify_goto_goto);
 	ADD_PATTERN(simplify_conditional);
 	ADD_PATTERN(remove_dead_label);
-	ADD_PATTERN(collapse_unique_label);
+	/*ADD_PATTERN(collapse_labels);*/
 }
