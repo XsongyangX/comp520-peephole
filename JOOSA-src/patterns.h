@@ -213,7 +213,12 @@ int collapse_unique_label(CODE **c)
   {
     droplabel(label2);
     copylabel(label1);
-    //return replace(c, )
+	
+	/* 
+	only remove the goto instruction
+	dead labels are handled by something else
+	*/
+	return replace(c, 2, makeCODEgoto(label1, NULL));
   }
   return 0;
 }
@@ -225,4 +230,5 @@ void init_patterns(void) {
 	ADD_PATTERN(simplify_goto_goto);
 	ADD_PATTERN(simplify_conditional);
 	ADD_PATTERN(remove_dead_label);
+	ADD_PATTERN(collapse_unique_label);
 }
