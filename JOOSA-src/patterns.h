@@ -220,8 +220,40 @@ int collapse_labels(CODE **c)
 
 
 /*
-
+	goto Label
+	... (one line of instruction that is not a label)
+------------------->
+	goto Label
 */
+int remove_unreachable(CODE **c)
+{
+	int label, anotherLabel;
+	
+	if (
+		is_goto(*c, &label)
+		&& !is_label(next(*c), &anotherLabel)
+	)
+		return replace(c, 2, makeCODEgoto(label, NULL));
+	return 0;
+}
+
+
+/*
+	goto Label
+Label:
+--------------->
+Label: (reference count decrements)
+*/
+int fuse_goto(CODE **c)
+{
+	int label1, label2;
+	if (is_goto(*c, &label1) && is_label(next(*c), &label2) && label1 == label2)
+	{
+		droplabel(label1);
+		return kill_line(c);
+	}
+	return 0;
+}
 
 void init_patterns(void) {
 	ADD_PATTERN(simplify_multiplication_right);
@@ -231,4 +263,6 @@ void init_patterns(void) {
 	ADD_PATTERN(simplify_conditional);
 	ADD_PATTERN(remove_dead_label);
 	/*ADD_PATTERN(collapse_labels);*/
+	ADD_PATTERN(remove_unreachable);
+	ADD_PATTERN(fuse_goto);
 }
