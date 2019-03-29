@@ -183,7 +183,7 @@ int simplify_conditional(CODE **c)
 */
 int remove_dead_label(CODE **c) {
 	int label;
-	if (is_label(*c, &label) && deadlabel(&label)){
+	if (is_label(*c, &label) && deadlabel(label)){
 		return kill_line(c);
 	}
 	return 0;
