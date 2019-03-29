@@ -94,7 +94,7 @@ int simplify_goto_goto(CODE **c)
 }
 
 /*
- * cmp true_1
+ * cmp true1
  * iconst_0
  * goto stop_2
  * true1:
