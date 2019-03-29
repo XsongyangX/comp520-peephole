@@ -94,7 +94,7 @@ int simplify_goto_goto(CODE **c)
 }
 
 /*
- * cmp true1
+ * cmp true1 (not only positive comparisons, any comparisons)
  * iconst_0
  * goto stop_2
  * true1:
@@ -104,12 +104,13 @@ int simplify_goto_goto(CODE **c)
  * ...
  * stop_0:
  * ---------->
- * !cmp stop_0
+ * !cmp stop_0 (the opposite comparison of cmp on the first line)
  * ...
  * stop_0:
  */
 int simplify_conditional(CODE **c)
-{int l1,l2, l3, l4;
+{
+  int l1,l2, l3, l4;
   if ( is_if_acmpeq(*c, &l1) || is_if_acmpne(*c,&l1) || is_if_icmpeq(*c, &l1) || 
       is_if_icmpge(*c, &l1) || is_if_icmpgt(*c, &l1) || is_if_icmple(*c, &l1) ||
       is_if_icmplt(*c, &l1) || is_if_icmpne(*c, &l1) || is_ifeq(*c, &l1) ||
@@ -188,7 +189,35 @@ int remove_dead_label(CODE **c) {
 	}
 	return 0;
 }
- 
+
+/*
+  goto Label1
+  goto Label2 (unique)
+  ...
+Label1:
+Label2: (unique)
+----------------->
+  goto Label1
+  ...
+Label1: (reference count increments)
+*/
+int collapse_unique_label(CODE **c)
+{
+  int label1, label2;
+  if (is_goto(*c, &label1)
+    && is_goto(next(*c), &label2)
+    && label1 > label2
+    && uniquelabel(label2)
+    && is_label(next(destination(label1)), &label2)
+  )
+  {
+    droplabel(label2);
+    copylabel(label1);
+    return replace(c, )
+  }
+  return 0;
+}
+
 void init_patterns(void) {
 	ADD_PATTERN(simplify_multiplication_right);
 	ADD_PATTERN(simplify_astore);
