@@ -120,54 +120,56 @@ int simplify_conditional(CODE **c)
         {
           if(is_ldc_int(next(destination(l1)), &l4) && l4 == 1 && is_label(next(next(destination(l1))), &l4) && l4 == l2)
           {
+            replace(next(destination(l1)), 1, NULL);
+            replace(next(destination(l2)), 1, NULL);
             droplabel(l1);
             droplabel(l2);
             if(is_if_acmpeq(*c, &l1))
             {
-              return replace(c, 7, makeCODEif_acmpne(l3, NULL));
+              return replace(c, 3, makeCODEif_acmpne(l3, NULL));
             }
             else if(is_if_acmpne(*c,&l1))
             {
-              return replace(c, 7, makeCODEif_acmpeq(l3, NULL));
+              return replace(c, 3, makeCODEif_acmpeq(l3, NULL));
             }
             else if(is_if_icmpeq(*c, &l1))
             {
-              return replace(c, 7, makeCODEif_icmpne(l3, NULL));
+              return replace(c, 3, makeCODEif_icmpne(l3, NULL));
             }
             else if(is_if_icmpge(*c, &l1))
             {
-              return replace(c, 7, makeCODEif_icmplt(l3, NULL));
+              return replace(c, 3, makeCODEif_icmplt(l3, NULL));
             }
             else if(is_if_icmpgt(*c, &l1))
             {
-              return replace(c, 7, makeCODEif_icmple(l3, NULL));
+              return replace(c, 3, makeCODEif_icmple(l3, NULL));
             }
             else if(is_if_icmple(*c, &l1))
             {
-              return replace(c, 7, makeCODEif_icmpgt(l3, NULL));
+              return replace(c, 3, makeCODEif_icmpgt(l3, NULL));
             }
             else if(is_if_icmplt(*c, &l1))
             {
-              return replace(c, 7, makeCODEif_icmpge(l3, NULL));
+              return replace(c, 3, makeCODEif_icmpge(l3, NULL));
             }
             else if(is_if_icmpne(*c, &l1))
             {
-              return replace(c, 7, makeCODEif_icmpeq(l3, NULL));
+              return replace(c, 3, makeCODEif_icmpeq(l3, NULL));
             }
             else if(is_ifeq(*c, &l1))
             {
-              return replace(c, 7, makeCODEifne(l3, NULL));
+              return replace(c, 3, makeCODEifne(l3, NULL));
             }
             else if(is_ifne(*c, &l1))
             {
-              return replace(c, 7, makeCODEifeq(l3, NULL));
+              return replace(c, 3, makeCODEifeq(l3, NULL));
             }
             else if(is_ifnonnull(*c, &l1))
             {
-              return replace(c, 7, makeCODEifnull(l3, NULL));
+              return replace(c, 3, makeCODEifnull(l3, NULL));
             }
             else{
-              return replace(c, 7, makeCODEifnonnull(l3, NULL));
+              return replace(c, 3, makeCODEifnonnull(l3, NULL));
             }
           }
          
