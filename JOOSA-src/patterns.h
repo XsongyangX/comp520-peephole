@@ -193,12 +193,12 @@ int remove_dead_label(CODE **c) {
 }
 
 /*
-  goto Label1
+  jump Label1 (any jump)
   ...
 Label1:
 Label2:
 ----------------->
-  goto Label2
+  jump Label2 (same jump)
   ...
 Label1: (reference count decrements, eventually dies)
 Label2: (reference count increments)
@@ -206,18 +206,56 @@ Label2: (reference count increments)
 int collapse_labels(CODE **c)
 {
   int label1, label2;
-  
+
   if (
-	is_goto(*c, &label1)
+	uses_label(*c, &label1)
 	&& is_label(next(destination(label1)), &label2)
 	&& label1>label2
 	)
 	{
 		droplabel(label1);
 		copylabel(label2);
-		return replace(c, 1, makeCODEgoto(label2, NULL));
+
+    /* goto */
+    if (is_goto(*c, &label1))
+		  return replace(c, 1, makeCODEgoto(label2, NULL));
+    /* ifeq */
+    if (is_ifeq(*c, &label1))
+      return replace(c, 1, makeCODEifeq(label2, NULL));
+    /* ifne */
+    if (is_ifne(*c, &label1))
+      return replace(c, 1, makeCODEifne(label2, NULL));
+    /* if_acmpeq */
+    if (is_if_acmpeq(*c, &label1))
+      return replace(c, 1, makeCODEif_acmpeq(label2, NULL));
+    /* if_acmpne */
+    if (is_if_acmpne(*c, &label1))
+      return replace(c, 1, makeCODEif_acmpne(label2, NULL));
+    /* if_ifnull */
+    if (is_ifnull(*c, &label1))
+      return replace(c, 1, makeCODEifnull(label2, NULL));
+    /* if_ifnonnull */
+    if (is_ifnonnull(*c, &label1))
+      return replace(c, 1, makeCODEifnonnull(label2, NULL));
+    /* if_icmpeq */
+    if (is_if_icmpeq(*c, &label1))
+      return replace(c, 1, makeCODEif_icmpeq(label2, NULL));
+    /* if_icmpgt */
+    if (is_if_icmpgt(*c, &label1))
+      return replace(c, 1, makeCODEif_icmpgt(label2, NULL));
+    /* if_icmplt */
+    if (is_if_icmplt(*c, &label1))
+      return replace(c, 1, makeCODEif_icmplt(label2, NULL));
+    /* if_icmple */
+    if (is_if_icmple(*c, &label1))
+      return replace(c, 1, makeCODEif_icmple(label2, NULL));
+    /* if_icmpge */
+    if (is_if_icmpge(*c, &label1))
+      return replace(c, 1, makeCODEif_icmpge(label2, NULL));
+    /* if_icmpne */
+    if (is_if_icmpne(*c, &label1))
+      return replace(c, 1, makeCODEif_icmpne(label2, NULL));
 	}
-  return 0;
 }
 
 
@@ -262,9 +300,9 @@ void init_patterns(void) {
 	ADD_PATTERN(simplify_astore);
 	ADD_PATTERN(positive_increment);
 	ADD_PATTERN(simplify_goto_goto);
-	ADD_PATTERN(simplify_conditional);
+	/*ADD_PATTERN(simplify_conditional);*/
 	ADD_PATTERN(remove_dead_label);
-	/*ADD_PATTERN(collapse_labels);*/
+	ADD_PATTERN(collapse_labels);
 	ADD_PATTERN(remove_unreachable);
 	ADD_PATTERN(fuse_goto);
 }
