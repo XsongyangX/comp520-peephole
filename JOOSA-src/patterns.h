@@ -255,7 +255,10 @@ int collapse_labels(CODE **c)
     /* if_icmpne */
     if (is_if_icmpne(*c, &label1))
       return replace(c, 1, makeCODEif_icmpne(label2, NULL));
+
+    return 0;
 	}
+  return 0;
 }
 
 
