@@ -11,12 +11,23 @@
  */
 
 /* iload x        iload x        iload x
- * ldc 0          ldc 1          ldc 2
+ * ldc_int 0      ldc_int 1      ldc_int 2
  * imul           imul           imul
  * ------>        ------>        ------>
  * ldc 0          iload x        iload x
  *                               dup
  *                               iadd
+ 
+	(My addition, by Song; not yet implemented)
+	
+	iload x			iload x 		iload x
+	iconst_0		iconst_1		iconst_2
+	imul			imul			imul
+	------->		------>			------->
+	iconst_0		iload x			iload x
+									dup
+									iadd
+ 
  */
 
 int simplify_multiplication_right(CODE **c)
@@ -50,8 +61,16 @@ int simplify_astore(CODE **c)
   return 0;
 }
 
+/*
+	dup
+	istore x
+	pop
+	-------->
+	istore x
+*/
+
 /* iload x
- * ldc k   (0<=k<=127)
+ * ldc k   (0<=k<=127) or iconst_n (0 <= n <= 5) //not implemented
  * iadd
  * istore x
  * --------->
@@ -95,10 +114,10 @@ int simplify_goto_goto(CODE **c)
 
 /*
  * cmp true1 (not only positive comparisons, any comparisons)
- * iconst_0
+ * iconst_0 or ldc_int 0 // or not implemented
  * goto stop_2
  * true1:
- * iconst_1
+ * iconst_1 or ldc_int 1 // or not implemented
  * stop_2:
  * ifeq stop_0
  * ...
@@ -297,6 +316,12 @@ int fuse_goto(CODE **c)
 	}
 	return 0;
 }
+
+/*
+	iinc x 0
+	----------->
+	(nothing)
+*/
 
 void init_patterns(void) {
 	ADD_PATTERN(simplify_multiplication_right);
