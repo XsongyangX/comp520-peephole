@@ -323,6 +323,31 @@ int fuse_goto(CODE **c)
 	(nothing)
 */
 
+
+/*
+  iload z / iconst z
+  istore x
+  label:
+  iload y
+  istore x
+  ---------->
+  label:
+  iload y
+  istore x
+*/
+
+
+
+/*
+  
+
+*/
+
+
+
+
+
+
 void init_patterns(void) {
 	ADD_PATTERN(simplify_multiplication_right);
 	ADD_PATTERN(simplify_astore);
