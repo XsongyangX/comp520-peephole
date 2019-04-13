@@ -397,13 +397,13 @@ int fuse_const_operations(CODE **c){
   int a, b;
   if(is_ldc_int(*c, &a) && is_ldc_int(next(*c), &b)){
     if (is_imul(next(next(*c)))){
-      return replace(c, 3, makeCODEldc_int(a*b));
+      return replace(c, 3, makeCODEldc_int(a*b, NULL));
     } else if(is_iadd(next(next(*c)))){
-      return replace(c, 3, makeCODEldc_int(a+b));
+      return replace(c, 3, makeCODEldc_int(a+b, NULL));
     } else if(is_isub(next(next(*c)))){
-      return replace(c, 3, makeCODEldc_int(a-b));
+      return replace(c, 3, makeCODEldc_int(a-b, NULL));
     } else if(is_idiv(next(next(*c)))){
-      return replace(c, 3, makeCODEldc_int(a/b));
+      return replace(c, 3, makeCODEldc_int(a/b, NULL));
     }
   }
   return 0; 
