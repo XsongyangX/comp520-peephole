@@ -86,6 +86,26 @@ int positive_increment(CODE **c)
   return 0;
 }
 
+/*
+	iload x
+	ldc k (0<=k<=127)
+	isub
+	istore x
+	----------->
+	iinc x -k 
+*/
+int negative_increment(CODE **c)
+{ int x,y,k;
+  if (is_iload(*c,&x) &&
+      is_ldc_int(next(*c),&k) &&
+      is_isub(next(next(*c))) &&
+      is_istore(next(next(next(*c))),&y) &&
+      x==y && 0<=k && k<=127) {
+     return replace(c,4,makeCODEiinc(x,-k,NULL));
+  }
+  return 0;
+}
+
 /* goto L1
  * ...
  * L1:
@@ -112,10 +132,10 @@ int simplify_goto_goto(CODE **c)
 
 /*
  * cmp true1 (not only positive comparisons, any comparisons)
- * iconst_0 or ldc_int 0 // or not implemented
+ * iconst_0 
  * goto stop_2
  * true1:
- * iconst_1 or ldc_int 1 // or not implemented
+ * iconst_1
  * stop_2:
  * ifeq stop_0
  * ...
@@ -329,6 +349,23 @@ int zero_increment(CODE **c)
 	return 0;
 }
 
+/*
+	iinc x k 
+	iinc x m 
+	-------->
+	iinc x (k+m) (-128 <= k+m <= 127)
+*/
+int merge_increment(CODE **c)
+{
+	int x1, x2, k, m; /* x1 == x2 is checked later */
+	if (is_iinc(*c, &x1, &k) &&
+		is_iinc(next(*c), &x2, &m) &&
+		x1 == x2 &&
+		-128 <= k + m &&
+		k + m <= 127)
+		return replace(c, 2, makeCODEiinc(x1, k+m, NULL));
+	return 0;
+}
 
 /*
   iload z / iconst z
@@ -349,8 +386,51 @@ int zero_increment(CODE **c)
 
 */
 
-
-
+/*
+	ireturn		return		areturn
+	nop			nop			nop
+	------>		------->	-------->
+	ireturn		return		areturn
+	
+	
+	nop
+	nop
+	------>
+	nop
+	
+	
+	nop
+	Label:
+	------>
+	Label:
+*/
+int simplify_nop(CODE **c)
+{
+	/* nop after a return */
+	if (is_ireturn(*c) &&
+		is_nop(next(*c)))
+		return replace(c, 2, makeCODEireturn(NULL));
+		
+	else if (is_return(*c) &&
+		is_nop(next(*c)))
+		return replace(c, 2, makeCODEreturn(NULL));
+		
+	else if (is_areturn(*c) &&
+		is_nop(next(*c)))
+		return replace(c, 2, makeCODEareturn(NULL));
+	
+	/* repeated nop */
+	else if (is_nop(*c) && is_nop(next(*c)))
+		return replace(c, 2, makeCODEnop(NULL));
+	
+	
+	/* nop before a label */
+	int label;
+	if (is_nop(*c) && is_label(next(*c), &label))
+		return replace(c, 2, makeCODElabel(label, NULL));
+	
+	return 0;
+}
 
 
 
@@ -366,4 +446,7 @@ void init_patterns(void) {
 	ADD_PATTERN(fuse_goto);
 	ADD_PATTERN(zero_increment);
 	ADD_PATTERN(simplify_istore);
+	ADD_PATTERN(negative_increment);
+	ADD_PATTERN(merge_increment);
+	ADD_PATTERN(simplify_nop);
 }
