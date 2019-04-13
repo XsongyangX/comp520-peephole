@@ -339,14 +339,38 @@ int zero_increment(CODE **c)
  * istore y
 */
 int redundant_store(CODE **c){
-  int x, y, z;
+  int x, y1, y2 z;
   if((is_iload(*c, &z) || is_ldc_int(*c, &z)) &&  
-     is_istore(next(*c), &y) &&
+     is_istore(next(*c), &y1) &&
      is_iload(next(next(*c)), &x) &&
-     is_istore(next(next(next(*c), &y)))){
+     is_istore(next(next(next(*c), &y2))) && y1 == y2){
         return replace(c, 4, makeCODEiload(x, makeCODEistore(y, NULL)));
      }
      return 0;
+}
+
+/*
+ *  iconst a
+ *  iconst b
+ *  iadd / isub / imul / idiv
+ *  -------->
+ *  iconst a+b / iconst a-b / iconst a*b / iconst a/b
+*/
+int fuse_const_operations(CODE **c){
+  int a, b;
+  if(is_ldc_int(*c, &a) && is_ldc_int(next(*c), &b)){
+    if (is_imul(next(next(*c)))){
+      return replace(c, 3, makeCODE(ldc_int(a*b)));
+    } else if(is_iadd(next(next(*c)))){
+      return replace(c, 3, makeCODE(ldc_int(a+b)));
+    } else if(is_isub(next(next(*c)))){
+      return replace(c, 3, makeCODE(ldc_int(a-b)));
+    } else if(is_idiv(next(next(*c)))){
+      return replace(c, 3, makeCODE(ldc_int(a/b)));
+    }
+  }
+  return 0; 
+    
 }
 
 
@@ -367,4 +391,5 @@ void init_patterns(void) {
 	ADD_PATTERN(zero_increment);
 	ADD_PATTERN(simplify_istore);
   ADD_PATTERN(redundant_store);
+  ADD_PATTERN(fuse_const_operations);
 }
