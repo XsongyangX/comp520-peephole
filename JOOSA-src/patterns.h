@@ -432,6 +432,8 @@ int fuse_const_operations(CODE **c){
 */
 int simplify_nop(CODE **c)
 {
+	int label;
+	
 	/* nop after a return */
 	if (is_ireturn(*c) &&
 		is_nop(next(*c)))
@@ -451,7 +453,6 @@ int simplify_nop(CODE **c)
 	
 	
 	/* nop before a label */
-	int label;
 	if (is_nop(*c) && is_label(next(*c), &label))
 		return replace(c, 2, makeCODElabel(label, NULL));
 	
