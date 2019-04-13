@@ -367,24 +367,24 @@ int merge_increment(CODE **c)
 	return 0;
 }
 
-/*
-  iload z / iconst z
-  istore x
-  label:
-  iload y
-  istore x
-  ---------->
-  label:
-  iload y
-  istore x
+/* iload z / iconst z
+ * istore y
+ * iload x
+ * istore y
+ * -------->
+ * iload x
+ * istore y
 */
-
-
-
-/*
-  
-
-*/
+int redundant_store(CODE **c){
+  int x, y, z;
+  if((is_iload(*c, &z) || is_ldc_int(*c, &z)) &&  
+     is_istore(next(*c), &y) &&
+     is_iload(next(next(*c)), &x) &&
+     is_istore(next(next(next(*c), &y)))){
+        return replace(c, 4, makeCODEiload(x, makeCODEistore(y, NULL)));
+     }
+     return 0;
+}
 
 /*
 	ireturn		return		areturn
@@ -449,4 +449,6 @@ void init_patterns(void) {
 	ADD_PATTERN(negative_increment);
 	ADD_PATTERN(merge_increment);
 	ADD_PATTERN(simplify_nop);
+	ADD_PATTERN(redundant_store);
+
 }
