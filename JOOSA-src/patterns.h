@@ -17,23 +17,12 @@
  * ldc 0          iload x        iload x
  *                               dup
  *                               iadd
- 
-	(My addition, by Song; not yet implemented)
-	
-	iload x			iload x 		iload x
-	iconst_0		iconst_1		iconst_2
-	imul			imul			imul
-	------->		------>			------->
-	iconst_0		iload x			iload x
-									dup
-									iadd
- 
  */
 
 int simplify_multiplication_right(CODE **c)
 { int x,k;
   if (is_iload(*c,&x) && 
-      is_ldc_int(next(*c),&k) && 
+      is_ldc_int(next(*c),&k)&& 
       is_imul(next(next(*c)))) {
      if (k==0) return replace(c,3,makeCODEldc_int(0,NULL));
      else if (k==1) return replace(c,3,makeCODEiload(x,NULL));
@@ -68,13 +57,22 @@ int simplify_astore(CODE **c)
 	-------->
 	istore x
 */
+int simplify_istore(CODE **c)
+{ int x;
+  if (is_dup(*c) &&
+      is_istore(next(*c),&x) &&
+      is_pop(next(next(*c)))) {
+     return replace(c,3,makeCODEistore(x,NULL));
+  }
+  return 0;
+}
 
-/* iload x
- * ldc k   (0<=k<=127) or iconst_n (0 <= n <= 5) //not implemented
- * iadd
- * istore x
- * --------->
- * iinc x k
+/* iload x					
+ * ldc k   (0<=k<=127)		
+ * iadd						
+ * istore x					
+ * --------->				
+ * iinc x k					
  */ 
 int positive_increment(CODE **c)
 { int x,y,k;
@@ -322,6 +320,14 @@ int fuse_goto(CODE **c)
 	----------->
 	(nothing)
 */
+int zero_increment(CODE **c)
+{
+	int x, amount;
+	if(is_iinc(*c, &x, &amount) && amount == 0) {
+		return kill_line(c);
+	}
+	return 0;
+}
 
 
 /*
@@ -358,4 +364,6 @@ void init_patterns(void) {
 	ADD_PATTERN(collapse_labels);
 	ADD_PATTERN(remove_unreachable);
 	ADD_PATTERN(fuse_goto);
+	ADD_PATTERN(zero_increment);
+	ADD_PATTERN(simplify_istore);
 }
