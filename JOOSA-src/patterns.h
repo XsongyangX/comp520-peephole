@@ -473,10 +473,11 @@ void init_patterns(void) {
 	ADD_PATTERN(fuse_goto);
 	ADD_PATTERN(zero_increment);
 	ADD_PATTERN(simplify_istore);
+	
   ADD_PATTERN(redundant_store);
   ADD_PATTERN(fuse_const_operations);
+  
 	ADD_PATTERN(negative_increment);
 	ADD_PATTERN(merge_increment);
 	ADD_PATTERN(simplify_nop);
-	ADD_PATTERN(redundant_store);
 }
